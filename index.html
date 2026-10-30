@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Iron Timer</title>
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Iron Timer">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+<link rel="icon" href="img/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --g:#81F105; --g2:#5fb400; --red:#ff4433; --bg:#000; --p:#0e0e0e; --p2:#171717; --b:#262626;
+  --t:#f2f2f2; --m:#8d8d8d;
+  --st:env(safe-area-inset-top); --sb:env(safe-area-inset-bottom);
+  --sl:env(safe-area-inset-left); --sr:env(safe-area-inset-right);
+  --cond:'Barlow Condensed','Arial Narrow',system-ui,sans-serif;
+  --body:'Barlow',system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--t);font-family:var(--body);overscroll-behavior:none}
+body{-webkit-user-select:none;user-select:none;-webkit-text-size-adjust:100%}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+input,select{font:inherit;color:var(--t)}
+.view{position:fixed;inset:0;display:none;flex-direction:column;padding:calc(var(--st) + 12px) calc(var(--sr) + 16px) 0 calc(var(--sl) + 16px)}
+.view.on{display:flex}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:calc(var(--sb) + 96px)}
+h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;margin:0}
+.muted{color:var(--m)}
+
+/* header */
+.hdr{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.hdr img{width:46px;height:46px}
+.hdr .tt{font-family:var(--cond);font-weight:800;font-size:26px;line-height:1;text-transform:uppercase}
+.hdr .tt small{display:block;font-size:13px;font-weight:600;color:var(--g);letter-spacing:.12em}
+.back{display:flex;align-items:center;gap:6px;font-family:var(--cond);font-weight:700;font-size:18px;text-transform:uppercase;color:var(--m);margin-bottom:14px;height:36px}
+
+/* mode grid */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mode{background:var(--p);border:1px solid var(--b);border-radius:14px;padding:16px 14px;text-align:left;min-height:96px;display:flex;flex-direction:column;justify-content:space-between;transition:border-color .15s,transform .1s}
+.mode:active{transform:scale(.97);border-color:var(--g)}
+.mode b{font-family:var(--cond);font-size:28px;font-weight:800;text-transform:uppercase;line-height:1}
+.mode span{font-size:13px;color:var(--m);line-height:1.3}
+.cta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:58px;border-radius:14px;background:var(--g);color:#000;font-family:var(--cond);font-weight:800;font-size:22px;text-transform:uppercase;letter-spacing:.03em}
+.cta.sec{background:var(--p2);color:var(--t);border:1px solid var(--b)}
+.cta.red{background:var(--red);color:#fff}
+.cta:active{filter:brightness(.85)}
+.sect{font-family:var(--cond);font-weight:700;font-size:15px;letter-spacing:.12em;color:var(--m);text-transform:uppercase;margin:24px 0 10px}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{display:flex;align-items:center;gap:12px;background:var(--p);border:1px solid var(--b);border-radius:12px;padding:12px 14px}
+.item .grow{flex:1;min-width:0}
+.item .t1{font-family:var(--cond);font-weight:700;font-size:20px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .t2{font-size:13px;color:var(--m)}
+.item .res{font-family:var(--cond);font-weight:800;font-size:24px;color:var(--g);white-space:nowrap}
+.x{width:32px;height:32px;border-radius:8px;color:var(--m);font-size:20px;flex:none}
+.empty{color:var(--m);font-size:14px;padding:6px 2px}
+
+/* bottom nav */
+.nav{position:fixed;left:0;right:0;bottom:0;display:none;background:rgba(0,0,0,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-top:1px solid var(--b);padding:6px calc(var(--sr) + 8px) calc(var(--sb) + 6px) calc(var(--sl) + 8px);z-index:20}
+.nav.on{display:flex}
+.nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--m)}
+.nav button svg{width:24px;height:24px}
+.nav button.on{color:var(--g)}
+.nav .recb{color:var(--t)}
+.nav .recb i{display:block;width:24px;height:24px;border-radius:50%;border:2px solid currentColor;position:relative}
+.nav .recb i:after{content:'';position:absolute;inset:4px;border-radius:50%;background:var(--red)}
+
+/* setup */
+.field{background:var(--p);border:1px solid var(--b);border-radius:14px;padding:14px;margin-bottom:10px}
+.field label{display:block;font-family:var(--cond);font-weight:700;font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:var(--m);margin-bottom:10px}
+.stp{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.stp button{width:54px;height:54px;border-radius:12px;background:var(--p2);border:1px solid var(--b);font-size:28px;font-weight:600;flex:none}
+.stp button:active{border-color:var(--g);color:var(--g)}
+.stp .val{flex:1;text-align:center;font-family:var(--cond);font-weight:800;font-size:46px;line-height:1;font-variant-numeric:tabular-nums}
+.stp .val small{font-size:18px;color:var(--m);font-weight:600;margin-left:4px}
+.txt{width:100%;height:48px;border-radius:10px;background:var(--p2);border:1px solid var(--b);padding:0 12px;font-size:17px;-webkit-user-select:text;user-select:text}
+.txt:focus{outline:none;border-color:var(--g)}
+.row2{display:flex;gap:10px;margin-top:14px}
+.row2>*{flex:1}
+.hint{font-size:13px;color:var(--m);margin-top:8px}
+
+/* run */
+#run{padding:calc(var(--st) + 10px) calc(var(--sr) + 14px) calc(var(--sb) + 14px) calc(var(--sl) + 14px);transition:background .25s}
+#run.rest{background:#1a0705}
+#run.prep{background:#0b0b0b}
+.runtop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.runtop .lbl{font-family:var(--cond);font-weight:700;font-size:18px;text-transform:uppercase;letter-spacing:.06em;color:var(--m);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.runtop img{width:34px;height:34px;flex:none}
+.runmid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
+.phase{font-family:var(--cond);font-weight:800;font-size:clamp(22px,6vw,40px);letter-spacing:.14em;text-transform:uppercase;color:var(--g)}
+#run.rest .phase{color:var(--red)}
+#run.prep .phase{color:var(--t)}
+.big{font-family:var(--cond);font-weight:800;line-height:.9;font-variant-numeric:tabular-nums;font-size:min(32vw,46vh);color:var(--g);letter-spacing:-.01em}
+#run.rest .big{color:var(--red)}
+#run.prep .big{color:var(--t)}
+.sub{font-family:var(--cond);font-weight:700;font-size:clamp(20px,5.5vw,34px);text-transform:uppercase;letter-spacing:.06em;margin-top:6px;text-align:center}
+.sub2{font-size:15px;color:var(--m);margin-top:4px;font-variant-numeric:tabular-nums;text-align:center}
+.prog{height:6px;background:var(--p2);border-radius:3px;overflow:hidden;margin:10px 0 14px}
+.prog i{display:block;height:100%;width:0;background:var(--g)}
+#run.rest .prog i{background:var(--red)}
+.runbtns{display:flex;gap:10px}
+.runbtns button{height:64px;border-radius:16px;font-family:var(--cond);font-weight:800;font-size:22px;text-transform:uppercase}
+.rb-sm{flex:0 0 76px;background:var(--p2);border:1px solid var(--b)}
+.rb-round{flex:1;background:var(--g);color:#000}
+.rb-round:active{filter:brightness(.8)}
+.rb-round[hidden]{display:none}
+@media (orientation:landscape) and (max-height:500px){
+  .big{font-size:min(24vw,58vh)}
+  .runbtns button{height:52px}
+}
+
+/* record */
+#rec{padding:0;background:#000}
+.stage{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);overflow:hidden;background:#050505}
+.stage video,.stage canvas.ov{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.stage video.mir{transform:scaleX(-1)}
+.rtop{position:absolute;left:0;right:0;top:0;display:flex;align-items:center;gap:8px;padding:calc(var(--st) + 10px) calc(var(--sr) + 12px) 10px calc(var(--sl) + 12px);z-index:3}
+.rbtn{width:44px;height:44px;border-radius:50%;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;flex:none}
+.rbtn svg{width:22px;height:22px}
+.rbtn:disabled{opacity:.35}
+.chip{flex:1;min-width:0;height:44px;border-radius:22px;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;gap:8px;padding:0 14px;font-family:var(--cond);font-weight:700;font-size:17px;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden}
+.chip b{color:var(--g);overflow:hidden;text-overflow:ellipsis}
+.recdot{display:none;align-items:center;gap:6px;font-family:var(--cond);font-weight:700;font-size:18px;font-variant-numeric:tabular-nums}
+.recdot i{width:10px;height:10px;border-radius:50%;background:var(--red);animation:bl 1s infinite}
+@keyframes bl{50%{opacity:.2}}
+#rec.recording .recdot{display:flex}
+#rec.recording .chip{display:none}
+.rbot{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:space-around;padding:14px calc(var(--sr) + 12px) calc(var(--sb) + 18px) calc(var(--sl) + 12px);z-index:3}
+.shut{width:78px;height:78px;border-radius:50%;border:4px solid #fff;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25)}
+.shut i{width:60px;height:60px;border-radius:50%;background:var(--red);transition:all .2s}
+#rec.recording .shut i{width:30px;height:30px;border-radius:7px}
+.side{width:64px;height:64px;border-radius:50%;background:rgba(0,0,0,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;font-family:var(--cond);font-weight:800;font-size:15px;text-transform:uppercase;line-height:1;text-align:center}
+.side svg{width:28px;height:28px}
+.side.rnd{background:var(--g);color:#000;font-size:17px}
+.side[hidden]{visibility:hidden;display:flex}
+.camerr{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:30px;color:var(--m);z-index:2}
+.camerr.on{display:flex}
+.flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;z-index:4;transition:opacity .25s}
+#rc{position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0;pointer-events:none}
+
+/* sheets */
+.sheet{position:fixed;inset:0;z-index:40;display:none;background:rgba(0,0,0,.6)}
+.sheet.on{display:block}
+.sheet .pan{position:absolute;left:0;right:0;bottom:0;max-height:88%;overflow-y:auto;background:#0d0d0d;border-top:1px solid var(--b);border-radius:20px 20px 0 0;padding:18px calc(var(--sr) + 16px) calc(var(--sb) + 18px) calc(var(--sl) + 16px);-webkit-overflow-scrolling:touch}
+.sheet h2{font-size:26px;margin-bottom:14px}
+.tg{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--b);font-size:16px}
+.tg:last-child{border:0}
+.sw{position:relative;width:52px;height:32px;flex:none}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.sw i{position:absolute;inset:0;border-radius:16px;background:#333;transition:.2s}
+.sw i:after{content:'';position:absolute;left:3px;top:3px;width:26px;height:26px;border-radius:50%;background:#fff;transition:.2s}
+.sw input:checked+i{background:var(--g)}
+.sw input:checked+i:after{transform:translateX(20px)}
+.seg{display:flex;background:var(--p2);border:1px solid var(--b);border-radius:10px;padding:3px;gap:3px}
+.seg button{flex:1;height:36px;border-radius:8px;font-family:var(--cond);font-weight:700;font-size:16px;text-transform:uppercase;color:var(--m);padding:0 10px}
+.seg button.on{background:var(--g);color:#000}
+.media{width:100%;max-height:56vh;border-radius:12px;background:#000;display:block;object-fit:contain}
+.res-big{font-family:var(--cond);font-weight:800;font-size:64px;color:var(--g);line-height:1;text-align:center;margin:6px 0 4px;font-variant-numeric:tabular-nums}
+.splits{font-size:14px;color:var(--m);text-align:center;margin-bottom:12px;font-variant-numeric:tabular-nums}
+
+/* install banner */
+.inst{display:none;align-items:center;gap:10px;background:var(--p2);border:1px solid var(--b);border-radius:12px;padding:10px 12px;margin-bottom:14px;font-size:14px;line-height:1.35}
+.inst.on{display:flex}
+.inst .grow{flex:1}
+.inst button.go{background:var(--g);color:#000;border-radius:8px;padding:8px 12px;font-family:var(--cond);font-weight:800;text-transform:uppercase}
+.toast{position:fixed;left:50%;bottom:calc(var(--sb) + 100px);transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:10px;font-size:15px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;max-width:86vw;text-align:center}
+.toast.on{opacity:1}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<section class="view on" id="home">
+  <div class="hdr"><img src="img/helmet.png" alt=""><div class="tt">Iron Timer<small>Iron Training System</small></div></div>
+  <div class="scroll">
+    <div class="inst" id="inst"><div class="grow" id="instTxt"></div><button class="go" id="instGo" hidden>Installa</button><button class="x" id="instX">×</button></div>
+    <div class="grid" id="modes"></div>
+    <div style="margin-top:12px"><button class="cta" id="homeRec"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3z"/></svg>Registra WOD</button></div>
+    <div class="sect">Preset salvati</div>
+    <div class="list" id="presets"></div>
+  </div>
+</section>
+
+<!-- SETUP -->
+<section class="view" id="setup">
+  <button class="back" data-back>‹ Indietro</button>
+  <div class="scroll">
+    <h1 id="suTitle" style="font-size:44px;line-height:1;color:var(--g)"></h1>
+    <p class="muted" id="suDesc" style="margin:6px 0 16px;font-size:14px"></p>
+    <div id="suFields"></div>
+    <div class="field"><label>Nome del WOD (facoltativo)</label><input class="txt" id="suName" placeholder="es. Fran, Murph, WOD del giorno" maxlength="40"></div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px">
+      <button class="cta" id="suStart">Avvia timer</button>
+      <button class="cta red" id="suRec">Registra con timer</button>
+      <button class="cta sec" id="suSave">Salva come preset</button>
+    </div>
+  </div>
+</section>
+
+<!-- RUN -->
+<section class="view" id="run">
+  <div class="runtop"><div class="lbl" id="runLbl"></div><img src="img/helmet.png" alt=""></div>
+  <div class="runmid">
+    <div class="phase" id="runPhase"></div>
+    <div class="big" id="runBig">0:00</div>
+    <div class="sub" id="runSub"></div>
+    <div class="sub2" id="runSub2"></div>
+  </div>
+  <div class="prog"><i id="runProg"></i></div>
+  <div class="runbtns">
+    <button class="rb-sm" id="runStop">Stop</button>
+    <button class="rb-round" id="runRound">+1 Round</button>
+    <button class="rb-sm" id="runPause">Pausa</button>
+  </div>
+</section>
+
+<!-- RECORD -->
+<section class="view" id="rec">
+  <div class="stage" id="stage">
+    <video id="vid" playsinline muted autoplay></video>
+    <canvas class="ov" id="ov"></canvas>
+  </div>
+  <div class="camerr" id="camErr"></div>
+  <div class="flash" id="flash"></div>
+  <div class="rtop">
+    <button class="rbtn" id="recClose" aria-label="Chiudi"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <button class="chip" id="recChip"><span class="muted">Timer</span><b id="recChipTxt">Nessuno</b></button>
+    <div class="recdot" style="flex:1;justify-content:center"><i></i><span id="recTime">0:00</span></div>
+    <button class="rbtn" id="recOv" aria-label="Overlay"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
+    <button class="rbtn" id="recFlip" aria-label="Gira camera"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8"/><path d="M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.3 4.9L20 16"/><path d="M20 20v-4h-4"/></svg></button>
+  </div>
+  <div class="rbot">
+    <button class="side" id="recPhoto" aria-label="Foto"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+    <button class="shut" id="recBtn" aria-label="Registra"><i></i></button>
+    <button class="side rnd" id="recRound" hidden>+1<br>Rnd</button>
+  </div>
+  <canvas id="rc"></canvas>
+</section>
+
+<!-- HISTORY -->
+<section class="view" id="hist">
+  <div class="hdr"><img src="img/helmet.png" alt=""><div class="tt">Storico<small>I tuoi WOD</small></div></div>
+  <div class="scroll"><div class="list" id="histList"></div></div>
+</section>
+
+<!-- SETTINGS -->
+<section class="view" id="sett">
+  <div class="hdr"><img src="img/helmet.png" alt=""><div class="tt">Impostazioni<small>Iron Timer</small></div></div>
+  <div class="scroll">
+    <div class="field"><label>Conto alla rovescia iniziale</label><div class="seg" id="setCd"></div></div>
+    <div class="field" style="padding-top:4px;padding-bottom:4px">
+      <div class="tg">Beep<label class="sw"><input type="checkbox" id="setBeep"><i></i></label></div>
+      <div class="tg">Voce (Via, Riposo, Tempo)<label class="sw"><input type="checkbox" id="setVoice"><i></i></label></div>
+      <div class="tg">Vibrazione (Android)<label class="sw"><input type="checkbox" id="setVib"><i></i></label></div>
+    </div>
+    <div class="field"><label>Il tuo nome (per i video)</label><input class="txt" id="setName" placeholder="Nome atleta" maxlength="30"></div>
+    <div class="field"><label>Qualità video</label><div class="seg" id="setQ"></div><div class="hint">HD pesa meno ed è più stabile sui WOD lunghi.</div></div>
+    <div class="field"><label>Dati</label><button class="cta sec" id="setClear" style="height:48px;font-size:18px">Cancella storico</button></div>
+    <p class="muted" style="text-align:center;font-size:12px;margin-top:20px">Iron Timer · Iron Training System<br>I dati restano solo su questo dispositivo.</p>
+  </div>
+</section>
+
+<nav class="nav on" id="nav">
+  <button data-go="home" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg>Timer</button>
+  <button data-go="rec" class="recb"><i></i>Registra</button>
+  <button data-go="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Storico</button>
+  <button data-go="sett"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Impost.</button>
+</nav>
+
+<!-- Overlay settings sheet -->
+<div class="sheet" id="shOv"><div class="pan">
+  <h2>Dati sul video</h2>
+  <div id="ovToggles"></div>
+  <div class="field" style="margin-top:12px"><label>Posizione</label><div class="seg" id="ovPos"></div></div>
+  <div class="field"><label>Dimensione</label><div class="seg" id="ovSize"></div></div>
+  <div class="field"><label>Sfondo della barra</label><div class="seg" id="ovBg"></div></div>
+  <div class="field"><label>Colore</label><div class="seg" id="ovCol"></div></div>
+  <button class="cta" data-close>Fatto</button>
+</div></div>
+
+<!-- Timer pick sheet (record) -->
+<div class="sheet" id="shPick"><div class="pan">
+  <h2>Timer per la ripresa</h2>
+  <div class="list" id="pickList"></div>
+  <button class="cta sec" data-close style="margin-top:14px">Chiudi</button>
+</div></div>
+
+<!-- Result sheet -->
+<div class="sheet" id="shRes"><div class="pan">
+  <h2 id="resTitle">Risultato</h2>
+  <div class="res-big" id="resBig"></div>
+  <div class="splits" id="resSplits"></div>
+  <div class="field" id="resRepsF"><label>Round e ripetizioni</label>
+    <div style="display:flex;gap:10px"><input class="txt" id="resRounds" type="number" inputmode="numeric" placeholder="Round"><input class="txt" id="resReps" type="number" inputmode="numeric" placeholder="+ Reps"></div></div>
+  <div class="field"><label>Note</label><input class="txt" id="resNotes" placeholder="es. RX, 43 kg, scaled…" maxlength="80"></div>
+  <div style="display:flex;gap:10px"><button class="cta sec" id="resDiscard">Scarta</button><button class="cta" id="resSave">Salva</button></div>
+</div></div>
+
+<!-- Media sheet -->
+<div class="sheet" id="shMedia"><div class="pan">
+  <h2 id="mTitle">Video pronto</h2>
+  <div id="mBox"></div>
+  <p class="hint" id="mHint"></p>
+  <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
+    <button class="cta" id="mShare">Salva / Condividi</button>
+    <a class="cta sec" id="mDl" download style="text-decoration:none">Scarica file</a>
+    <button class="cta sec" id="mClose">Chiudi</button>
+  </div>
+</div></div>
+
+<div class="toast" id="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>
