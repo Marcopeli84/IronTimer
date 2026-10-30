@@ -197,9 +197,9 @@ function renderHome() {
   $('#modes').innerHTML = Object.entries(MODES).map(([k, m]) => `<button class="mode" data-m="${k}"><b>${m.n}</b><span>${m.d}</span></button>`).join('');
   $$('#modes .mode').forEach(b => b.onclick = () => openSetup(b.dataset.m, 'home'));
   const P = LS.get('presets', []);
-  $('#presets').innerHTML = P.length ? P.map((p, i) => `<div class="item" data-i="${i}"><div class="grow"><div class="t1">${esc(wodName(p))}</div><div class="t2">${esc(p.name ? cfgLabel(p) : MODES[p.mode].n)}</div></div><button class="x" data-del="${i}">×</button></div>`).join('')
-    : '<div class="empty">Imposta un timer e tocca "Salva come preset" per averlo qui.</div>';
-  $$('#presets .item').forEach(el => el.onclick = e => {
+  $('#prow').style.display = P.length ? '' : 'none';
+  $('#presets').innerHTML = P.map((p, i) => `<div class="pchip" data-i="${i}">${esc(wodName(p))}<button class="x" data-del="${i}">×</button></div>`).join('');
+  $$('#presets .pchip').forEach(el => el.onclick = e => {
     const i = +el.dataset.i;
     if (e.target.dataset.del !== undefined) { if (confirm('Eliminare il preset?')) { P.splice(i, 1); LS.set('presets', P); renderHome(); } return; }
     openSetup(P[i].mode, 'home', P[i]);
@@ -210,7 +210,7 @@ $('#homeRec').onclick = () => go('rec');
 /* ---------- setup ---------- */
 let SU = {};
 const FIELDS = {
-  fortime: [['cap', 'Time cap', 't', 30, 'nessuno']],
+  fortime: [['cap', 'Time cap (facoltativo)', 't', 30, 'nessuno']],
   amrap: [['dur', 'Durata', 't', 30]],
   emom: [['every', 'Ogni', 't', 15], ['rounds', 'Round', 'n', 1]],
   tabata: [['work', 'Lavoro', 's', 5], ['rest', 'Riposo', 's', 5], ['rounds', 'Round', 'n', 1]],
@@ -226,7 +226,7 @@ function openSetup(mode, from, preset) {
   $('#suRec').textContent = from === 'rec' ? 'Usa per la ripresa' : 'Registra con timer';
   $('#suStart').style.display = from === 'rec' ? 'none' : '';
   $('#suFields').innerHTML = FIELDS[mode].map(([k, l]) => `<div class="field"><label>${l}</label><div class="stp"><button data-k="${k}" data-d="-1">−</button><div class="val" id="v_${k}"></div><button data-k="${k}" data-d="1">+</button></div></div>`).join('')
-    + (mode === 'fortime' ? '<p class="hint" style="margin:-2px 2px 10px">Senza cap il timer va avanti finché non tocchi Stop.</p>' : '');
+    || '<div class="field" style="align-items:center;text-align:center"><span class="muted">Conta in avanti finché non tocchi Fine.</span></div>';
   FIELDS[mode].forEach(f => updField(f));
   $$('#suFields .stp button').forEach(b => {
     const f = FIELDS[mode].find(x => x[0] === b.dataset.k);
@@ -243,7 +243,7 @@ function updField(f) {
   const v = SU[f[0]], el = $('#v_' + f[0]);
   if (f[2] === 'n') el.innerHTML = v;
   else if (f[2] === 's') el.innerHTML = v + '<small>sec</small>';
-  else el.innerHTML = (f[4] && !v) ? '<span style="font-size:32px">Nessuno</span>' : fmt(v);
+  else el.innerHTML = (f[4] && !v) ? '<span class="none">Nessuno</span>' : fmt(v);
 }
 function suCfg() { const c = Object.assign({}, SU); c.name = $('#suName').value.trim(); LS.set('last_' + c.mode, c); return c; }
 $('#suStart').onclick = () => startRun(suCfg());
@@ -302,7 +302,7 @@ function openResult() {
   $('#resTitle').textContent = wodName(E.cfg);
   $('#resBig').textContent = r.big;
   $('#resSplits').textContent = r.splits;
-  $('#resRepsF').style.display = r.reps ? '' : 'none';
+  $('#resRepsF').style.display = r.reps ? 'flex' : 'none';
   $('#resRounds').value = E.rounds.length || ''; $('#resReps').value = ''; $('#resNotes').value = '';
   $('#shRes').classList.add('on');
 }
@@ -647,8 +647,8 @@ $('#recChip').onclick = () => {
   const items = [['none', 'Nessun timer', 'Solo data, ora e logo']]
     .concat(Object.keys(MODES).map(k => ['m:' + k, MODES[k].n, MODES[k].d]))
     .concat(P.map((p, i) => ['p:' + i, wodName(p), 'Preset · ' + cfgLabel(p)]));
-  $('#pickList').innerHTML = items.map(([k, a, b]) => `<button class="item" data-k="${k}" style="text-align:left"><div class="grow"><div class="t1">${esc(a)}</div><div class="t2">${esc(b)}</div></div></button>`).join('');
-  $$('#pickList .item').forEach(el => el.onclick = () => {
+  $('#pickList').innerHTML = items.map(([k, a, b]) => `<button class="tile" data-k="${k}"><b>${esc(a)}</b><span>${esc(b)}</span></button>`).join('');
+  $$('#pickList .tile').forEach(el => el.onclick = () => {
     const k = el.dataset.k; $('#shPick').classList.remove('on');
     if (k === 'none') { REC.cfg = null; LS.set('recCfg', null); E.reset(); updRecUi(); }
     else if (k.startsWith('m:')) openSetup(k.slice(2), 'rec');
@@ -660,12 +660,11 @@ $('#recChip').onclick = () => {
 $('#recTmr').onclick = () => $('#recChip').onclick();
 
 /* overlay settings */
-const OVT = [['logo', 'Logo (elmo)'], ['gym', 'Nome palestra'], ['app', 'Nome app'], ['time', 'Tempo del timer'], ['round', 'Fase e round'], ['wod', 'Nome del WOD'], ['athlete', 'Nome atleta'], ['date', 'Data'], ['clock', 'Ora']];
+const OVT = [['logo', 'Logo'], ['gym', 'Palestra'], ['app', 'Nome app'], ['time', 'Tempo'], ['round', 'Round'], ['wod', 'WOD'], ['athlete', 'Atleta'], ['date', 'Data'], ['clock', 'Ora']];
 $('#recOv').onclick = () => {
-  $('#ovToggles').innerHTML = OVT.map(([k, l]) => `<div class="tg">${l}${k === 'athlete' && !S.name ? ' <span class="muted" style="font-size:12px">(imposta il nome)</span>' : ''}<label class="sw"><input type="checkbox" data-k="${k}" ${OV[k] ? 'checked' : ''}><i></i></label></div>`).join('')
-    + `<div class="tg" style="display:block"><input class="txt" id="ovName" placeholder="Nome atleta" maxlength="30" value="${esc(S.name)}"></div>`;
+  $('#ovToggles').innerHTML = OVT.map(([k, l]) => `<label class="pill"><input type="checkbox" data-k="${k}" ${OV[k] ? 'checked' : ''}><span>${l}</span></label>`).join('');
   $$('#ovToggles input[data-k]').forEach(i => i.onchange = () => { OV[i.dataset.k] = i.checked; saveOV(); });
-  $('#ovName').oninput = e => { S.name = e.target.value.trim(); saveS(); };
+  const on = $('#ovName'); on.value = S.name; on.oninput = e => { S.name = e.target.value.trim(); saveS(); };
   segCtl($('#ovPos'), [['top', 'In alto'], ['bottom', 'In basso']], () => OV.pos, v => { OV.pos = v; saveOV(); });
   segCtl($('#ovSize'), [['s', 'Piccola'], ['m', 'Media'], ['l', 'Grande']], () => OV.size, v => { OV.size = v; saveOV(); });
   segCtl($('#ovBg'), [[0, 'Nessuno'], [0.35, 'Leggero'], [0.55, 'Medio'], [0.8, 'Scuro']], () => OV.bg, v => { OV.bg = +v; saveOV(); });
