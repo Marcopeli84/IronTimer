@@ -172,6 +172,54 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
 .inst button.go{background:var(--g);color:#000;border-radius:8px;padding:8px 12px;font-family:var(--cond);font-weight:800;text-transform:uppercase}
 .toast{position:fixed;left:50%;bottom:calc(var(--sb) + 100px);transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:10px;font-size:15px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;max-width:86vw;text-align:center}
 .toast.on{opacity:1}
+
+/* ===== layout: run + record as flex blocks ===== */
+.runmain{flex:1;display:flex;flex-direction:column;min-height:0;min-width:0}
+.runmid{overflow:hidden}
+#rec.on{display:flex;flex-direction:column}
+#rec .rtop,#rec .rbot{position:static;flex:none}
+.swrap{position:relative;flex:1;min-height:0;min-width:0;overflow:hidden}
+.rtimer{display:none}
+
+/* ===== landscape ===== */
+@media (orientation:landscape){
+  .grid{grid-template-columns:repeat(3,1fr)}
+  #suFields{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:0 10px}
+  .sheet .pan{left:50%;right:auto;width:min(100%,620px);transform:translateX(-50%);max-height:94%}
+  .media{max-height:48vh}
+}
+@media (orientation:landscape) and (max-height:600px){
+  .view{padding-top:calc(var(--st) + 8px)}
+  .hdr{margin-bottom:10px}
+  .hdr img{width:36px;height:36px}
+  .hdr .tt{font-size:22px}
+  .mode{min-height:72px;padding:12px}
+  .mode b{font-size:24px}
+  .nav button{flex-direction:row;justify-content:center;gap:8px;padding:8px 0;font-size:14px}
+  .nav button svg,.nav .recb i{width:20px;height:20px}
+  .scroll{padding-bottom:calc(var(--sb) + 70px)}
+  /* timer: number on the left, buttons stacked on the right */
+  #run.on{flex-direction:row;gap:14px}
+  .runbtns{flex-direction:column;width:150px;flex:none}
+  .runbtns button{height:auto;flex:1;min-height:0}
+  .rb-sm{flex:1 1 0}
+  .rb-round{flex:2 1 0}
+  .big{font-size:min(21vw,50vh)}
+  .phase{font-size:clamp(18px,6vh,30px)}
+  .sub{font-size:clamp(18px,7vh,30px);margin-top:2px}
+  .sub2{font-size:13px;margin-top:2px}
+  .prog{margin:6px 0 0}
+  /* camera: controls on the sides, like the phone camera */
+  #rec.on{flex-direction:row}
+  #rec .rtop{flex-direction:column;justify-content:space-between;width:auto;padding:calc(var(--st) + 12px) 10px calc(var(--sb) + 12px) calc(var(--sl) + 10px)}
+  #rec .chip{display:none}
+  .rtimer{display:flex}
+  #rec.recording .rtimer{display:none}
+  .recdot{flex:none!important;writing-mode:vertical-rl;transform:rotate(180deg);font-size:16px}
+  #rec .rbot{flex-direction:column-reverse;justify-content:space-around;padding:calc(var(--st) + 12px) calc(var(--sr) + 12px) calc(var(--sb) + 12px) 10px}
+  .shut{width:70px;height:70px}.shut i{width:54px;height:54px}
+  .side{width:56px;height:56px}
+}
 </style>
 </head>
 <body>
@@ -206,6 +254,7 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
 
 <!-- RUN -->
 <section class="view" id="run">
+  <div class="runmain">
   <div class="runtop"><div class="lbl" id="runLbl"></div><img src="img/helmet.png" alt=""></div>
   <div class="runmid">
     <div class="phase" id="runPhase"></div>
@@ -214,6 +263,7 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
     <div class="sub2" id="runSub2"></div>
   </div>
   <div class="prog"><i id="runProg"></i></div>
+  </div>
   <div class="runbtns">
     <button class="rb-sm" id="runStop">Stop</button>
     <button class="rb-round" id="runRound">+1 Round</button>
@@ -223,18 +273,21 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
 
 <!-- RECORD -->
 <section class="view" id="rec">
-  <div class="stage" id="stage">
-    <video id="vid" playsinline muted autoplay></video>
-    <canvas class="ov" id="ov"></canvas>
-  </div>
-  <div class="camerr" id="camErr"></div>
-  <div class="flash" id="flash"></div>
   <div class="rtop">
     <button class="rbtn" id="recClose" aria-label="Chiudi"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <button class="chip" id="recChip"><span class="muted">Timer</span><b id="recChipTxt">Nessuno</b></button>
+    <button class="rbtn rtimer" id="recTmr" aria-label="Timer"><svg viewBox="0 0 24 24" fill="none" stroke="#81F105" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg></button>
     <div class="recdot" style="flex:1;justify-content:center"><i></i><span id="recTime">0:00</span></div>
     <button class="rbtn" id="recOv" aria-label="Overlay"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></svg></button>
     <button class="rbtn" id="recFlip" aria-label="Gira camera"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8"/><path d="M4 4v4h4"/><path d="M4 13a8 8 0 0 0 14.3 4.9L20 16"/><path d="M20 20v-4h-4"/></svg></button>
+  </div>
+  <div class="swrap" id="swrap">
+    <div class="stage" id="stage">
+      <video id="vid" playsinline muted autoplay></video>
+      <canvas class="ov" id="ov"></canvas>
+    </div>
+    <div class="camerr" id="camErr"></div>
+    <div class="flash" id="flash"></div>
   </div>
   <div class="rbot">
     <button class="side" id="recPhoto" aria-label="Foto"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>

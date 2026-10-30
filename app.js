@@ -389,14 +389,23 @@ function closeCam() {
   setSession('transient');
 }
 function layoutStage() {
-  const vw = vid.videoWidth || 1280, vh = vid.videoHeight || 720;
-  const W = innerWidth, H = innerHeight, k = Math.min(W / vw, H / vh);
+  // while recording, the frame keeps the recording's shape even if the phone is rotated
+  const vw = REC.recording ? rc.width : (vid.videoWidth || 1280), vh = REC.recording ? rc.height : (vid.videoHeight || 720);
+  const sw = $('#swrap'), W = sw.clientWidth || innerWidth, H = sw.clientHeight || innerHeight, k = Math.min(W / vw, H / vh);
   const st = $('#stage'); st.style.width = Math.round(vw * k) + 'px'; st.style.height = Math.round(vh * k) + 'px';
   const dpr = Math.min(2, devicePixelRatio || 1);
   ov.width = Math.round(vw * k * dpr); ov.height = Math.round(vh * k * dpr);
 }
-addEventListener('resize', () => { if (cur === 'rec') setTimeout(layoutStage, 250); });
-let lastVW = 0, lastVH = 0;
+const relayout = () => { if (cur === 'rec') { layoutStage(); setTimeout(layoutStage, 300); setTimeout(layoutStage, 800); } };
+addEventListener('resize', relayout);
+addEventListener('orientationchange', relayout);
+// draw the camera frame filling the target without stretching (crop the excess)
+function drawCover(x, w, h) {
+  const vw = vid.videoWidth, vh = vid.videoHeight; if (!vw || !vh) return;
+  const k = Math.max(w / vw, h / vh), dw = vw * k, dh = vh * k;
+  x.drawImage(vid, (w - dw) / 2, (h - dh) / 2, dw, dh);
+}
+let lastVW = 0, lastVH = 0, lastSW = 0, lastSH = 0;
 
 /* overlay content */
 function ovData() {
@@ -500,13 +509,14 @@ function drawOverlay(c, W, H, d) {
 }
 function drawRec() {
   if (vid.videoWidth && (vid.videoWidth !== lastVW || vid.videoHeight !== lastVH)) { lastVW = vid.videoWidth; lastVH = vid.videoHeight; layoutStage(); }
+  const sw = $('#swrap'); if (sw.clientWidth !== lastSW || sw.clientHeight !== lastSH) { lastSW = sw.clientWidth; lastSH = sw.clientHeight; layoutStage(); }
   const d = ovData();
   const c = ov.getContext('2d');
   c.clearRect(0, 0, ov.width, ov.height);
   drawOverlay(c, ov.width, ov.height, d);
   if (REC.recording) {
     const r = rc.getContext('2d');
-    try { r.drawImage(vid, 0, 0, rc.width, rc.height); } catch (e) {}
+    try { r.fillStyle = '#000'; r.fillRect(0, 0, rc.width, rc.height); drawCover(r, rc.width, rc.height); } catch (e) {}
     drawOverlay(r, rc.width, rc.height, d);
     $('#recTime').textContent = fmt((performance.now() - REC.t0) / 1000);
   }
@@ -557,7 +567,7 @@ function startRec() {
   wake(true);
   // start the linked timer together with the recording
   if (REC.cfg && !E.running && !E.done) E.start(REC.cfg);
-  updRecUi();
+  updRecUi(); layoutStage();
 }
 function stopRec() {
   if (!REC.recording) return;
@@ -565,7 +575,7 @@ function stopRec() {
   $('#rec').classList.remove('recording');
   try { REC.mr.stop(); } catch (e) { onRecStop(); }
   if (E.running && !E.done) E.finish(false);
-  updRecUi();
+  updRecUi(); layoutStage();
 }
 function onRecStop() {
   try { if (REC.micSrc) REC.micSrc.disconnect(); } catch (e) {}
@@ -646,6 +656,8 @@ $('#recChip').onclick = () => {
   });
   $('#shPick').classList.add('on');
 };
+
+$('#recTmr').onclick = () => $('#recChip').onclick();
 
 /* overlay settings */
 const OVT = [['logo', 'Logo (elmo)'], ['gym', 'Nome palestra'], ['app', 'Nome app'], ['time', 'Tempo del timer'], ['round', 'Fase e round'], ['wod', 'Nome del WOD'], ['athlete', 'Nome atleta'], ['date', 'Data'], ['clock', 'Ora']];
