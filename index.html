@@ -219,6 +219,19 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
   #rec .rbot{flex-direction:column-reverse;justify-content:space-around;padding:calc(var(--st) + 12px) calc(var(--sr) + 12px) calc(var(--sb) + 12px) 10px}
   .shut{width:70px;height:70px}.shut i{width:54px;height:54px}
   .side{width:56px;height:56px}
+  /* setup: settings on the left, buttons on the right, no scrolling */
+  #setup .back{margin-bottom:4px;height:30px}
+  #setup .scroll{display:grid;grid-template-columns:1fr 240px;column-gap:14px;align-content:start;padding-bottom:calc(var(--sb) + 12px)}
+  #setup .scroll>*{grid-column:1}
+  #setup #suBtns{grid-column:2;grid-row:1 / span 4;align-self:start;position:sticky;top:0;margin-top:0!important}
+  #suTitle{font-size:30px!important}
+  #suDesc{display:none}
+  #setup .field{padding:8px 12px;margin-bottom:8px}
+  #setup .field label{margin-bottom:6px;font-size:13px}
+  .stp button{width:44px;height:44px;font-size:24px}
+  .stp .val{font-size:34px}
+  #setup .txt{height:40px}
+  #suBtns .cta{height:52px;font-size:19px}
 }
 </style>
 </head>
@@ -244,7 +257,7 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
     <p class="muted" id="suDesc" style="margin:6px 0 16px;font-size:14px"></p>
     <div id="suFields"></div>
     <div class="field"><label>Nome del WOD (facoltativo)</label><input class="txt" id="suName" placeholder="es. Fran, Murph, WOD del giorno" maxlength="40"></div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px">
+    <div id="suBtns" style="display:flex;flex-direction:column;gap:10px;margin-top:6px">
       <button class="cta" id="suStart">Avvia timer</button>
       <button class="cta red" id="suRec">Registra con timer</button>
       <button class="cta sec" id="suSave">Salva come preset</button>
@@ -316,7 +329,7 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
     <div class="field"><label>Il tuo nome (per i video)</label><input class="txt" id="setName" placeholder="Nome atleta" maxlength="30"></div>
     <div class="field"><label>Qualità video</label><div class="seg" id="setQ"></div><div class="hint">HD pesa meno ed è più stabile sui WOD lunghi.</div></div>
     <div class="field"><label>Dati</label><button class="cta sec" id="setClear" style="height:48px;font-size:18px">Cancella storico</button></div>
-    <p class="muted" style="text-align:center;font-size:12px;margin-top:20px">Iron Timer · Iron Training System<br>I dati restano solo su questo dispositivo.</p>
+    <p class="muted" style="text-align:center;font-size:12px;margin-top:20px">Iron Timer v3 · Iron Training System<br>I dati restano solo su questo dispositivo.</p>
   </div>
 </section>
 
