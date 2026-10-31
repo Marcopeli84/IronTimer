@@ -1,4 +1,4 @@
-const V = 'irontimer-v5';
+const V = 'irontimer-v6';
 const CORE = ['./', 'index.html', 'app.js', 'manifest.webmanifest', 'img/helmet.png', 'img/helmet-white.png', 'img/logo.png', 'img/icon-192.png', 'img/icon-512.png', 'img/apple-touch-icon.png'];
 
 self.addEventListener('install', e => {

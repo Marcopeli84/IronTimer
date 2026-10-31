@@ -14,7 +14,7 @@
 <link rel="icon" href="img/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 /* Every screen is sized from the visible height (--vh) so it fits without scrolling
    on any phone or tablet, portrait or landscape. Only the history list scrolls. */
@@ -68,7 +68,7 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
 .mode{min-height:0;background:var(--p);border:1px solid var(--b);border-radius:14px;padding:clamp(8px,calc(var(--vh)*1.8),18px) clamp(10px,2.5vw,18px);text-align:left;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;transition:border-color .15s,transform .1s}
 .mode:active{transform:scale(.97);border-color:var(--g)}
 .mode b{font-family:var(--cond);font-size:clamp(18px,calc(var(--vh)*4.4),40px);font-weight:800;text-transform:uppercase;line-height:1}
-.mode span{font-size:clamp(11px,calc(var(--vh)*1.7),15px);color:var(--m);line-height:1.25}
+.mode .d{font-size:clamp(11px,calc(var(--vh)*1.7),15px);color:var(--m);line-height:1.25}
 .prow{display:flex;align-items:center;gap:8px;flex:none;min-height:0}
 .prow .lb{font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.12em;color:var(--m);text-transform:uppercase;flex:none}
 .pstrip{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0;-webkit-overflow-scrolling:touch}
@@ -125,7 +125,7 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
 .sub2{font-size:clamp(12px,calc(var(--vh)*1.9),17px);color:var(--m);margin-top:2px;font-variant-numeric:tabular-nums;text-align:center}
 .prog{height:6px;background:var(--p2);border-radius:3px;overflow:hidden;margin:var(--gap) 0 0;flex:none}
 .prog i{display:block;height:100%;width:0;background:var(--g)}
-#run.rest .prog i{background:var(--red)}
+#run.rest .prog i.on{background:var(--red)}
 .runbtns{display:flex;gap:var(--gap);flex:none}
 .runbtns button{height:clamp(54px,calc(var(--vh)*9),84px);border-radius:16px;font-family:var(--cond);font-weight:800;font-size:clamp(18px,calc(var(--vh)*3),28px);text-transform:uppercase}
 .rb-sm{flex:0 0 26%;background:var(--p2);border:1px solid var(--b)}
@@ -218,6 +218,57 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
 .inst button.go{background:var(--g);color:#000;border-radius:8px;padding:7px 12px;font-family:var(--cond);font-weight:800;text-transform:uppercase}
 .toast{position:fixed;left:50%;bottom:calc(var(--sb) + var(--navh) + 30px);transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:10px;font-size:15px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;max-width:86vw;text-align:center}
 .toast.on{opacity:1}
+/* ===== Style A · Spartano ===== */
+#home::before,#setup::before,#run::before,#hist::before,#sett::before{content:'';position:absolute;left:0;right:0;top:0;height:4px;background:var(--g);z-index:1}
+#run.rest::before{background:var(--red)}
+#run.prep::before{background:#444}
+.hdr .tt{font-weight:900}
+.slabel{display:flex;align-items:center;gap:10px;flex:none;font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.2em;color:#7d7d7d;text-transform:uppercase}
+.slabel:after{content:'';flex:1;height:1px;background:var(--b)}
+.mode{border-radius:0;clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,0 100%);background:#0d0d0d;border-color:#2a2a2a}
+.mode .num{font-style:normal;font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.1em;color:var(--g);text-transform:uppercase}
+.mode .mt{display:flex;flex-direction:column;gap:4px}
+.mode b{font-weight:900;line-height:.95}
+.mode.last{background:var(--g);border-color:var(--g);color:#000}
+.mode.last .num{color:#000}
+.mode.last .d{color:#1d3a00}
+.cta{border-radius:0;clip-path:polygon(12px 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%,0 12px);font-weight:900;letter-spacing:.05em}
+.rdot{width:.6em;height:.6em;border-radius:50%;background:#fff;flex:none}
+.pchip{border-radius:0;border-color:#2a2a2a;font-weight:800}
+.nav button.on{box-shadow:inset 0 3px 0 var(--g)}
+.field,.item,.tile,.inst{border-radius:4px}
+.pan{border-radius:6px 6px 0 0;border-top:3px solid var(--g)}
+.stp button,.txt,.seg,.seg button,.pill span,.pillbtn{border-radius:3px}
+#suTitle{font-weight:900}
+.titrow{border-left:4px solid var(--g);padding-left:10px}
+/* timer */
+.phase{letter-spacing:.4em;padding-left:.4em;font-weight:900}
+.big{font-weight:900;text-shadow:0 0 .22em rgba(129,241,5,.45)}
+#run.rest .big{text-shadow:0 0 .22em rgba(255,68,51,.45)}
+#run.prep .big{text-shadow:none}
+.sub{display:flex;align-items:center;justify-content:center;gap:.4em;font-weight:900}
+.sub:before,.sub:after{content:'';width:1.2em;height:1px;background:#3a3a3a}
+.sub:empty{display:none}
+.prog{height:auto;background:none;border-radius:0;display:grid;gap:3px}
+.prog i{display:block;height:8px;background:#1e1e1e;width:auto}
+.prog i.on{background:var(--g)}
+.prog i.cur{background:#3f6e0a}
+#run.rest .prog i.on{background:var(--red)}
+.runbtns button{border-radius:0;font-weight:900}
+.rb-sm{background:#111;border-color:#2a2a2a;clip-path:polygon(12px 0,100% 0,100% 100%,0 100%,0 12px)}
+.rb-round{clip-path:polygon(0 0,calc(100% - 16px) 0,100% 16px,100% 100%,16px 100%,0 calc(100% - 16px))}
+#runPause{clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)}
+/* camera */
+.chip{border-radius:0;background:transparent;border:1px solid #2a2a2a;font-weight:800}
+.rbtn{background:#161616}
+.side{background:#161616}
+.side.rnd{border-radius:0;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,12px 100%,0 calc(100% - 12px));font-weight:900}
+@media (orientation:landscape) and (max-height:430px){.slabel{display:none}}
+.mode b{font-size:min(clamp(18px,calc(var(--vh)*4.4),40px),8vw)}
+#run.rest .prog i.cur{background:#6e1c14}
+.runbtns:has(.rb-round[hidden]) .rb-sm{flex:1 1 0}
+@media (orientation:landscape){.mode b{font-size:min(clamp(18px,calc(var(--vh)*6.4),44px),4.3vw)}}
+@media (min-width:700px) and (orientation:portrait){.mode b{font-size:clamp(28px,5.5vw,52px)}}
 .sgate{position:fixed;inset:0;z-index:80;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:calc(var(--st) + 20px) 24px calc(var(--sb) + 20px)}
 .sgate.on{display:flex}
 
@@ -225,7 +276,7 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
 @media (min-width:700px) and (orientation:portrait){
   .sgrid{grid-template-columns:1fr 1fr}
   .mode b{font-size:clamp(28px,5.5vw,52px)}
-  .mode span{font-size:clamp(13px,2vw,18px)}
+  .mode .d{font-size:clamp(13px,2vw,18px)}
   .pan{left:50%;right:auto;width:min(100%,640px);transform:translateX(-50%)}
 }
 
@@ -233,7 +284,7 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
 @media (orientation:landscape){
   .grid{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr)}
   .mode b{font-size:clamp(18px,calc(var(--vh)*6.4),44px)}
-  .mode span{font-size:clamp(11px,calc(var(--vh)*2.6),16px)}
+  .mode .d{font-size:clamp(11px,calc(var(--vh)*2.6),16px)}
   .nav button{flex-direction:row;gap:8px;font-size:14px}
   /* setup: settings on the left, actions on the right */
   .sumain{display:grid;grid-template-columns:1fr minmax(170px,28%);grid-template-rows:minmax(0,1fr) auto;gap:var(--gap)}
@@ -275,11 +326,11 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
 @media (orientation:landscape) and (max-height:430px){
   .hdr .tt small{display:none}
   #suDesc{display:none}
-  .mode span{display:none}
+  .mode .d{display:none}
   .mode{justify-content:center}
 }
 @media (max-height:600px) and (orientation:portrait){
-  .mode span{display:none}
+  .mode .d{display:none}
 }
 </style>
 </head>
@@ -287,11 +338,12 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
 
 <!-- HOME -->
 <section class="view on navpad" id="home">
-  <div class="hdr"><img src="img/helmet.png" alt=""><div class="tt">Iron Timer<small>Iron Training System</small></div></div>
+  <div class="hdr"><img src="img/helmet.png" alt=""><div class="tt">Iron Timer<small>Forging elite athletes</small></div></div>
   <div class="inst" id="inst"><div class="grow" id="instTxt"></div><button class="go" id="instGo" hidden>Installa</button><button class="x" id="instX">×</button></div>
   <div class="fit">
+    <div class="slabel">Scegli il WOD</div>
     <div class="grid" id="modes"></div>
-    <button class="cta" id="homeRec"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="M16 10l6-3v10l-6-3z"/></svg>Registra WOD</button>
+    <button class="cta red" id="homeRec"><span class="rdot"></span>Registra WOD</button>
     <div class="prow" id="prow"><span class="lb">Preset</span><div class="pstrip" id="presets"></div></div>
   </div>
 </section>
@@ -320,7 +372,7 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
       <div class="sub" id="runSub"></div>
       <div class="sub2" id="runSub2"></div>
     </div>
-    <div class="prog"><i id="runProg"></i></div>
+    <div class="prog" id="runProg"></div>
   </div>
   <div class="runbtns">
     <button class="rb-sm" id="runStop">Stop</button>
@@ -374,7 +426,7 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
     <div class="field"><span class="flabel">Il tuo nome (per i video)</span><input class="txt" id="setName" placeholder="Nome atleta" maxlength="30"></div>
     <div class="field"><span class="flabel">Qualità video</span><div class="seg" id="setQ"></div></div>
     <div class="field"><div class="btnrow"><button class="cta sec" id="setClear" style="height:clamp(36px,calc(var(--vh)*5.6),46px);font-size:16px">Cancella storico</button></div>
-      <div class="foot">Iron Timer v5 · Iron Training System · I dati restano su questo dispositivo</div></div>
+      <div class="foot">Iron Timer v6 · Iron Training System · I dati restano su questo dispositivo</div></div>
   </div>
 </section>
 

@@ -12,7 +12,7 @@ const LS = {
 const S = Object.assign({ cd: 10, beep: true, voice: true, vib: true, name: '', q: 720 }, LS.get('set', {}));
 const OV = Object.assign({
   logo: true, gym: true, app: true, time: true, round: true, wod: true, athlete: true, date: true, clock: true,
-  pos: 'bottom', size: 'm', bg: 0.55, col: 'green'
+  pos: 'bottom', size: 'm', bg: 0.8, col: 'green'
 }, LS.get('ov', {}));
 const saveS = () => LS.set('set', S), saveOV = () => LS.set('ov', OV);
 
@@ -194,7 +194,8 @@ $$('.sheet').forEach(s => s.addEventListener('click', e => { if (e.target === s 
 
 /* ---------- home ---------- */
 function renderHome() {
-  $('#modes').innerHTML = Object.entries(MODES).map(([k, m]) => `<button class="mode" data-m="${k}"><b>${m.n}</b><span>${m.d}</span></button>`).join('');
+  const lastM = LS.get('lastMode', '');
+  $('#modes').innerHTML = Object.entries(MODES).map(([k, m], i) => `<button class="mode${k === lastM ? ' last' : ''}" data-m="${k}"><i class="num">0${i + 1}${k === lastM ? ' · Ultimo' : ''}</i><span class="mt"><b>${m.n}</b><span class="d">${m.d}</span></span></button>`).join('');
   $$('#modes .mode').forEach(b => b.onclick = () => openSetup(b.dataset.m, 'home'));
   const P = LS.get('presets', []);
   $('#prow').style.display = P.length ? '' : 'none';
@@ -245,13 +246,31 @@ function updField(f) {
   else if (f[2] === 's') el.innerHTML = v + '<small>sec</small>';
   else el.innerHTML = (f[4] && !v) ? '<span class="none">Nessuno</span>' : fmt(v);
 }
-function suCfg() { const c = Object.assign({}, SU); c.name = $('#suName').value.trim(); LS.set('last_' + c.mode, c); return c; }
+function suCfg() { const c = Object.assign({}, SU); c.name = $('#suName').value.trim(); LS.set('last_' + c.mode, c); LS.set('lastMode', c.mode); return c; }
 $('#suStart').onclick = () => startRun(suCfg());
 $('#suRec').onclick = () => { REC.cfg = suCfg(); LS.set('recCfg', REC.cfg); go('rec'); };
 $('#suSave').onclick = () => { const c = suCfg(), P = LS.get('presets', []); P.unshift(c); LS.set('presets', P.slice(0, 30)); toast('Preset salvato'); };
 
 /* ---------- run ---------- */
-function startRun(c) { setSession('transient'); E.start(c); go('run'); $('#runLbl').textContent = wodName(c); drawRun(); }
+function startRun(c) { setSession('transient'); E.start(c); go('run'); $('#runLbl').textContent = wodName(c); buildProg(); drawRun(); }
+// segmented progress bar: one notch per round when the WOD has rounds, otherwise 20 notches
+let progN = 0, progLast = -2;
+function buildProg() {
+  const c = E.cfg, el = $('#runProg');
+  const finite = isFinite(E.total);
+  progN = !finite ? 0 : (c.rounds ? Math.min(40, c.rounds) : 20);
+  el.style.display = progN ? '' : 'none';
+  el.style.gridTemplateColumns = 'repeat(' + progN + ', minmax(0, 1fr))';
+  el.innerHTML = '<i></i>'.repeat(progN); progLast = -2;
+}
+function drawProg(st) {
+  if (!progN) return;
+  const ws = E.workStart(), span = E.total - ws;
+  const p = st.phase === 'prep' ? 0 : Math.max(0, Math.min(1, (st.el - ws) / span));
+  const full = E.done ? progN : Math.floor(p * progN + 1e-9);
+  if (full === progLast) return; progLast = full;
+  [...$('#runProg').children].forEach((n, i) => { n.className = i < full ? 'on' : (i === full && st.phase !== 'prep' ? 'cur' : ''); });
+}
 function drawRun() {
   const st = E.state(); if (!st) return;
   const v = $('#run');
@@ -268,7 +287,7 @@ function drawRun() {
     if (m === 'amrap' || m === 'emom' || m === 'tabata' || m === 'interval') s2 = (s2 ? s2 + ' · ' : '') + 'Totale ' + fmt(Math.max(0, st.el - E.workStart()));
   }
   $('#runSub2').textContent = s2;
-  $('#runProg').style.width = Math.min(100, (st.pr || 0) * 100) + '%';
+  drawProg(st);
   $('#runRound').hidden = !['fortime', 'amrap', 'clock'].includes(m);
   $('#runPause').textContent = E.paused ? 'Via' : 'Pausa';
   $('#runStop').textContent = (m === 'fortime' || m === 'clock') && st.phase === 'work' ? 'Fine' : 'Stop';
@@ -445,9 +464,11 @@ function drawOverlay(c, W, H, d) {
   const m = Math.max(10, u * 2.6), bh = u * 14.5, bw = W - m * 2;
   const y = OV.pos === 'top' ? m : H - m - bh, x = m;
   c.save();
-  if (OV.bg > 0) { c.fillStyle = 'rgba(0,0,0,' + OV.bg + ')'; rr(c, x, y, bw, bh, u * 2.2); c.fill(); }
+  if (OV.bg > 0) { c.fillStyle = 'rgba(0,0,0,' + OV.bg + ')'; rr(c, x, y, bw, bh, u * 0.6); c.fill(); }
+  // accent bar on the left edge (Spartan style)
+  c.fillStyle = acc; c.fillRect(x, y, Math.max(3, u * 0.9), bh);
   c.textBaseline = 'alphabetic';
-  let lx = x + u * 2.2;
+  let lx = x + u * 3;
   const cy = y + bh / 2;
   // right block
   let rw = 0;
