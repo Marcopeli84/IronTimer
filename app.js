@@ -725,6 +725,20 @@ function samsungGate() {
 }
 
 /* ---------- boot ---------- */
-if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+if ('serviceWorker' in navigator) {
+  // when a new version takes over, reload once so the update shows right away
+  // (never in the middle of a timer or a recording)
+  const hadCtl = !!navigator.serviceWorker.controller;
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadCtl || reloaded) return;
+    if (E.running || REC.recording) { toast('Aggiornamento pronto: riapri l\'app'); return; }
+    reloaded = true; location.reload();
+  });
+  addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
+    reg.update().catch(() => {});
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) reg.update().catch(() => {}); });
+  }).catch(() => {}));
+}
 if (document.fonts) document.fonts.load("800 40px 'Barlow Condensed'").catch(() => {});
 renderHome(); instShow(); samsungGate();
