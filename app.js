@@ -685,7 +685,25 @@ addEventListener('beforeinstallprompt', e => { e.preventDefault(); bip = e; inst
 $('#instGo').onclick = async () => { if (!bip) return; bip.prompt(); await bip.userChoice; bip = null; $('#inst').classList.remove('on'); };
 $('#instX').onclick = () => { LS.set('instX', true); $('#inst').classList.remove('on'); };
 
+/* ---------- Samsung Internet → Chrome ----------
+   Play Protect wrongly blocks web apps installed from Samsung Internet,
+   so on that browser we hand the page over to Chrome (Android intent URL). */
+const isSamsung = /SamsungBrowser/i.test(navigator.userAgent) && /Android/i.test(navigator.userAgent);
+function chromeIntent() {
+  const here = location.host + location.pathname + location.search;
+  return 'intent://' + here + '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent('https://play.google.com/store/apps/details?id=com.android.chrome') + ';end';
+}
+function samsungGate() {
+  if (!isSamsung || standalone) return;
+  $('#sgGo').href = chromeIntent();
+  $('#sgStay').onclick = () => { $('#sgate').classList.remove('on'); };
+  $('#sgate').classList.add('on');
+  // try once per visit to jump to Chrome automatically; if the browser needs a tap, the button is there
+  let tried = false; try { tried = sessionStorage.getItem('it_sg') === '1'; sessionStorage.setItem('it_sg', '1'); } catch (e) {}
+  if (!tried) setTimeout(() => { location.href = chromeIntent(); }, 350);
+}
+
 /* ---------- boot ---------- */
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 if (document.fonts) document.fonts.load("800 40px 'Barlow Condensed'").catch(() => {});
-renderHome(); instShow();
+renderHome(); instShow(); samsungGate();

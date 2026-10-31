@@ -218,6 +218,8 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
 .inst button.go{background:var(--g);color:#000;border-radius:8px;padding:7px 12px;font-family:var(--cond);font-weight:800;text-transform:uppercase}
 .toast{position:fixed;left:50%;bottom:calc(var(--sb) + var(--navh) + 30px);transform:translateX(-50%);background:#222;color:#fff;padding:10px 16px;border-radius:10px;font-size:15px;z-index:60;opacity:0;transition:opacity .25s;pointer-events:none;max-width:86vw;text-align:center}
 .toast.on{opacity:1}
+.sgate{position:fixed;inset:0;z-index:80;background:#000;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:calc(var(--st) + 20px) 24px calc(var(--sb) + 20px)}
+.sgate.on{display:flex}
 
 /* ===== tablets and wide screens (portrait) ===== */
 @media (min-width:700px) and (orientation:portrait){
@@ -372,7 +374,7 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
     <div class="field"><span class="flabel">Il tuo nome (per i video)</span><input class="txt" id="setName" placeholder="Nome atleta" maxlength="30"></div>
     <div class="field"><span class="flabel">Qualità video</span><div class="seg" id="setQ"></div></div>
     <div class="field"><div class="btnrow"><button class="cta sec" id="setClear" style="height:clamp(36px,calc(var(--vh)*5.6),46px);font-size:16px">Cancella storico</button></div>
-      <div class="foot">Iron Timer v4 · Iron Training System · I dati restano su questo dispositivo</div></div>
+      <div class="foot">Iron Timer v5 · Iron Training System · I dati restano su questo dispositivo</div></div>
   </div>
 </section>
 
@@ -434,6 +436,13 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
   </div>
 </div></div>
 
+<div class="sgate" id="sgate">
+  <img src="img/helmet.png" alt="" style="height:90px;width:auto">
+  <h2 style="font-size:30px;line-height:1.05">Apri Iron Timer<br>con Chrome</h2>
+  <p class="muted" style="margin:0;font-size:15px;line-height:1.4;max-width:320px">Da Samsung Internet l'installazione viene bloccata per errore da Google Play Protect. Con Chrome funziona senza problemi.</p>
+  <a class="cta" id="sgGo" href="#" style="max-width:340px">Apri in Chrome</a>
+  <button class="back" id="sgStay" style="justify-content:center">Usa comunque questo browser</button>
+</div>
 <div class="toast" id="toast"></div>
 <script src="app.js"></script>
 </body>
