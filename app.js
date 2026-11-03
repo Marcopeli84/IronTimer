@@ -232,12 +232,12 @@ function openSetup(mode, from, preset) {
   $$('#suFields .stp button').forEach(b => {
     const f = FIELDS[mode].find(x => x[0] === b.dataset.k);
     let rep = 0, tt = 0;
-    const step = () => { const d = +b.dataset.d * stepFor(f, SU[f[0]], +b.dataset.d), low = Math.min(SU[f[0]], f[2] === 'n' ? 1 : (f[4] ? 0 : f[3])); SU[f[0]] = Math.max(low, Math.min(f[2] === 'n' ? 99 : 5940, SU[f[0]] + d)); updField(f); };
+    const step = () => { const d = +b.dataset.d * stepFor(f, SU[f[0]], +b.dataset.d), low = Math.min(SU[f[0]], f[2] === 'n' ? 1 : (f[4] ? 0 : f[3])); SU[f[0]] = Math.max(low, Math.min(maxFor(f), SU[f[0]] + d)); updField(f); };
     const stop = () => { clearTimeout(tt); clearInterval(rep); };
     b.onpointerdown = e => { e.preventDefault(); commitEdit(); step(); tt = setTimeout(() => rep = setInterval(step, 90), 420); };
     b.onpointerup = b.onpointerleave = b.onpointercancel = stop;
   });
-  FIELDS[mode].forEach(f => { $('#v_' + f[0]).onclick = () => editField(f); });
+  FIELDS[mode].forEach(f => { if (f[2] !== 't') $('#v_' + f[0]).onclick = () => editField(f); });
   go('setup');
 }
 function stepFor(f, v, dir) { if (f[2] !== 't') return f[3]; if (v + (dir < 0 ? -1 : 0) >= 600) return 60; return f[3]; }
@@ -245,26 +245,54 @@ function updField(f) {
   const v = SU[f[0]], el = $('#v_' + f[0]);
   if (f[2] === 'n') el.innerHTML = v;
   else if (f[2] === 's') el.innerHTML = v + '<small>sec</small>';
-  else el.innerHTML = (f[4] && !v) ? '<span class="none">Nessuno</span>' : fmt(v);
+  else updTime(f, el, v);
 }
-/* type the value on the keyboard: tap the number, digits fill from the right (1230 = 12:30) */
+const maxFor = f => f[2] === 'n' ? 99 : f[2] === 't' ? 359999 : 5940;
 const commitEdit = () => { const a = document.activeElement; if (a && a.classList.contains('valin')) a.blur(); };
-const maskT = d => { d = d.slice(-4); return d ? (d.length > 2 ? d.slice(0, -2) : '0') + ':' + d.slice(-2).padStart(2, '0') : ''; };
+/* time fields: three boxes, hours : minutes : seconds. Tap one and type; two digits jump to the next box */
+const hms = v => [Math.floor(v / 3600), Math.floor(v % 3600 / 60), v % 60];
+function updTime(f, el, v) {
+  if (!el.querySelector('input')) buildTime(f, el);
+  el.classList.toggle('zero', !v);
+  const parts = hms(v);
+  el.querySelectorAll('input').forEach((inp, i) => { inp.value = pad(parts[i]); inp.placeholder = ''; });
+}
+function buildTime(f, el) {
+  const names = ['ore', 'minuti', 'secondi'];
+  el.classList.add('valt');
+  el.innerHTML = names.map((n, i) => `${i ? '<i>:</i>' : ''}<input class="valin" type="text" inputmode="numeric" autocomplete="off" maxlength="2" enterkeyhint="done" aria-label="${f[1]} ${n}">`).join('');
+  const boxes = [...el.querySelectorAll('input')];
+  boxes.forEach((inp, i) => {
+    let cancel = false;
+    inp.onfocus = () => { cancel = false; inp.placeholder = inp.value; inp.value = ''; };
+    inp.oninput = () => {
+      inp.value = inp.value.replace(/\D/g, '').slice(0, 2);
+      if (inp.value.length === 2) { if (boxes[i + 1]) boxes[i + 1].focus(); else inp.blur(); }
+    };
+    inp.onkeydown = e => { if (e.key === 'Enter') inp.blur(); else if (e.key === 'Escape') { cancel = true; inp.blur(); } };
+    inp.onblur = () => {
+      if (inp.value && !cancel) {
+        const p = hms(SU[f[0]]); p[i] = +inp.value;
+        SU[f[0]] = Math.max(f[4] ? 0 : 1, Math.min(maxFor(f), p[0] * 3600 + p[1] * 60 + p[2]));
+      }
+      updField(f);
+    };
+  });
+}
 function editField(f) {
-  const el = $('#v_' + f[0]), isT = f[2] === 't';
+  const el = $('#v_' + f[0]);
   if (el.querySelector('input')) return;
   const inp = document.createElement('input');
   inp.className = 'valin'; inp.type = 'text'; inp.inputMode = 'numeric'; inp.autocomplete = 'off';
   inp.enterKeyHint = 'done'; inp.setAttribute('aria-label', f[1]);
-  inp.placeholder = isT ? fmt(SU[f[0]]) : String(SU[f[0]]);
+  inp.placeholder = String(SU[f[0]]);
   let cancel = false;
-  inp.oninput = () => { const d = inp.value.replace(/\D/g, ''); inp.value = isT ? maskT(d) : d.slice(0, f[2] === 'n' ? 2 : 4); };
+  inp.oninput = () => { const d = inp.value.replace(/\D/g, ''); inp.value = d.slice(0, f[2] === 'n' ? 2 : 4); };
   inp.onkeydown = e => { if (e.key === 'Enter') inp.blur(); else if (e.key === 'Escape') { cancel = true; inp.blur(); } };
   inp.onblur = () => {
     const d = inp.value.replace(/\D/g, '');
     if (d && !cancel) {
-      const v = isT ? +d.slice(0, -2) * 60 + +d.slice(-2) : +d;
-      SU[f[0]] = Math.max(f[4] ? 0 : 1, Math.min(f[2] === 'n' ? 99 : 5940, v));
+      SU[f[0]] = Math.max(1, Math.min(maxFor(f), +d));
     }
     updField(f);
   };

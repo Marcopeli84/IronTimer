@@ -102,6 +102,14 @@ h1,h2,h3{font-family:var(--cond);text-transform:uppercase;letter-spacing:.02em;m
 .stp .val{cursor:text}
 .stp .valin{width:100%;background:none;border:0;border-bottom:2px solid var(--g);border-radius:0;padding:0;outline:none;text-align:center;font:inherit;color:var(--g);line-height:1.1;-webkit-user-select:text;user-select:text}
 .stp .valin::placeholder{color:var(--m);opacity:1}
+.stp .valt{display:flex;align-items:center;justify-content:center;gap:.04em;min-width:0;font-size:clamp(24px,calc(var(--vh)*5.6),56px)}
+.stp .valt{container-type:inline-size}
+.stp .valt>*{font-size:min(1em,21cqw)}
+.stp .valt i{font-style:normal;color:var(--m)}
+.stp .valt .valin{width:1.2em;flex:none;padding:.08em 0;background:var(--p2);border:0;border-bottom:2px solid var(--b)}
+.stp .valt .valin:focus{border-bottom-color:var(--g)}
+.stp .valt:not(:focus-within) .valin{color:var(--t)}
+.stp .valt.zero:not(:focus-within) .valin{color:var(--m)}
 .stp .val small{font-size:.4em;color:var(--m);font-weight:600;margin-left:4px}
 .stp .val .none{font-size:.62em}
 .txt{width:100%;height:clamp(36px,calc(var(--vh)*5.6),48px);border-radius:10px;background:var(--p2);border:1px solid var(--b);padding:0 12px;font-size:16px;-webkit-user-select:text;user-select:text}
