@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Iron Timer TV</title>
+<meta name="theme-color" content="#000000">
+<link rel="icon" href="img/icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Fire TV: everything is sized from the screen and kept inside a safe margin for TVs that crop the edges */
+:root{--g:#81F105;--red:#ff4433;--p:#0e0e0e;--p2:#1b1b1b;--b:#303030;--t:#f2f2f2;--m:#9a9a9a;
+  --cond:'Barlow Condensed','Arial Narrow',sans-serif;--body:'Barlow',sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#000;color:var(--t);font-family:var(--body);overflow:hidden;cursor:none}
+button,input{font:inherit;color:inherit;background:none;border:0;outline:none;margin:0}
+.view{position:absolute;inset:0;padding:4vh 4vw;display:none;flex-direction:column;gap:2.4vh}
+.view.on{display:flex}
+.top{display:flex;align-items:center;gap:1.4vw;flex:none}
+.top img{height:7vh}
+.top h1{margin:0;font:800 6vh/1 var(--cond);letter-spacing:.03em;color:var(--g);text-transform:uppercase}
+.top span{font-size:2.6vh;color:var(--m)}
+.hint{flex:none;font-size:2.4vh;color:var(--m);text-align:center}
+.btn{background:var(--p2);border:.35vh solid var(--b);font:800 3.6vh/1.1 var(--cond);letter-spacing:.06em;text-transform:uppercase;padding:1.8vh 2vw}
+.go{background:var(--g);border-color:var(--g);color:#000}
+.rec{background:var(--p2)}
+.f:focus{background:var(--g);border-color:#fff;color:#000;box-shadow:0 0 0 .5vh #fff}
+.f.danger:focus{background:var(--red);color:#fff}
+
+/* home */
+#modes{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:2vh 1.4vw}
+.mode{display:flex;flex-direction:column;justify-content:center;text-align:left;background:var(--p);border:.35vh solid var(--b);padding:0 2.4vw}
+.mode b{font:800 7.5vh/1 var(--cond);text-transform:uppercase}
+.mode span{font-size:2.5vh;color:var(--m);margin-top:1vh}
+.mode:focus span{color:#000}
+.row{display:flex;gap:1vw;flex:none;align-items:stretch}
+#presets{flex:1;min-width:0;display:flex;gap:1vw;overflow:hidden}
+#presets .btn{white-space:nowrap}
+
+/* setup */
+.sumain{flex:1;min-height:0;display:flex;gap:2vw}
+#fields{flex:1;min-width:0;display:flex;justify-content:space-evenly;align-items:center;gap:1.5vw;background:var(--p);border:.35vh solid var(--b);padding:0 1vw}
+.fd{display:flex;flex-direction:column;align-items:center;gap:2.4vh}
+.fd label{font:700 3.2vh/1 var(--cond);letter-spacing:.1em;text-transform:uppercase;color:var(--m)}
+.boxes{display:flex;align-items:center;font-family:var(--cond);font-weight:800;line-height:1}
+.boxes>i{font-style:normal;color:var(--m);width:.3em;text-align:center}
+.spin{position:relative;width:1.25em;padding:.12em 0;text-align:center;background:var(--p2);border:.35vh solid transparent;font-variant-numeric:tabular-nums}
+.spin small{display:block;font:600 .17em/1 var(--cond);letter-spacing:.08em;color:var(--m);margin-top:.4em;text-transform:uppercase}
+.spin:focus small{color:#000}
+.spin.dim{color:var(--m)}
+.spin.dim:focus{color:#000}
+.spin:focus::before,.spin:focus::after{position:absolute;left:0;right:0;font-size:.3em;color:var(--g)}
+.spin:focus::before{content:'▲';top:-1.25em}
+.spin:focus::after{content:'▼';bottom:-1.25em}
+.side{flex:none;width:24vw;display:flex;flex-direction:column;gap:1.6vh}
+.side .go{flex:1;font-size:6vh}
+.txt{background:var(--p2);border:.35vh solid var(--b);padding:1.6vh 1vw;font-size:2.8vh;width:100%;user-select:text}
+.txt::placeholder{color:var(--m)}
+.txt:focus{border-color:var(--g);box-shadow:0 0 0 .5vh var(--g)}
+
+/* run */
+#run{padding:3vh 4vw;gap:1vh}
+#run.rest{background:#2a0705}
+#run.prep{background:#0d1a00}
+.rtop{display:flex;justify-content:space-between;align-items:center;flex:none;font:700 4.4vh/1 var(--cond);color:var(--m);text-transform:uppercase}
+.rtop img{height:7vh}
+.rmid{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#phase{font:800 9vh/1 var(--cond);letter-spacing:.06em;color:var(--g);text-transform:uppercase}
+#big{font:800 34vw/.92 var(--cond);font-variant-numeric:tabular-nums;color:var(--g);white-space:nowrap;font-size:min(34vw,54vh)}
+#big.long{font-size:min(25vw,50vh)}
+#run.rest #big,#run.rest #phase{color:var(--red)}
+#run.prep #big{color:#fff}
+#run.paused #big{opacity:.45}
+#sub{font:700 7vh/1.1 var(--cond);min-height:7.7vh;text-transform:uppercase}
+#sub2{font:600 4vh/1.1 var(--cond);color:var(--m);min-height:4.4vh}
+#prog{flex:none;display:grid;gap:.4vw;height:1.6vh}
+#prog i{background:var(--p2)}
+#prog i.on{background:var(--g)}
+#prog i.cur{background:#fff}
+.rbtn{flex:none;display:flex;justify-content:center;gap:1.5vw}
+.rbtn .btn{min-width:18vw;font-size:4.4vh;padding:1.6vh 2vw}
+
+/* result, lists */
+.res{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2.6vh}
+#resBig{font:800 22vh/1 var(--cond);color:var(--g)}
+#resSplits{font:600 3vh/1.2 var(--cond);color:var(--m);text-align:center;max-width:90%}
+#resReps{display:flex;gap:3vw}
+#resReps .boxes{font-size:11vh}
+.res .txt{width:50vw}
+.scroll{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:1vh}
+.item{flex:none;display:flex;align-items:center;gap:2vw;text-align:left;background:var(--p);border:.35vh solid var(--b);padding:1.6vh 2vw}
+.item div{flex:1;min-width:0}
+.item b{display:block;font:700 4vh/1.1 var(--cond);text-transform:uppercase}
+.item span{font-size:2.4vh;color:var(--m)}
+.item:focus span{color:#000}
+.item em{flex:none;font:800 5vh/1 var(--cond);font-style:normal;color:var(--g)}
+.item:focus em{color:#000}
+.empty{margin:auto;font-size:3.4vh;color:var(--m)}
+.sett{display:flex;align-items:center;gap:1vw}
+.sett>span{width:26vw;font:700 3.6vh/1 var(--cond);text-transform:uppercase}
+.btn.sel{border-color:var(--g);color:var(--g)}
+.btn.sel:focus{color:#000}
+#toast{position:fixed;left:50%;bottom:6vh;transform:translateX(-50%);background:#fff;color:#000;font:700 3.4vh/1 var(--cond);padding:1.8vh 2.4vw;display:none;z-index:9}
+#toast.on{display:block}
+</style>
+</head>
+<body>
+
+<section class="view" id="home">
+  <div class="top"><img src="img/helmet.png" alt=""><h1>Iron Timer</h1><span>Iron Training System</span></div>
+  <div id="modes"></div>
+  <div class="row">
+    <div id="presets"></div>
+    <button class="btn f" id="toHist">Storico</button>
+    <button class="btn f" id="toSett">Impostazioni</button>
+  </div>
+</section>
+
+<section class="view" id="setup">
+  <div class="top"><img src="img/helmet.png" alt=""><h1 id="suTitle"></h1><span id="suDesc"></span></div>
+  <div class="sumain">
+    <div id="fields"></div>
+    <div class="side">
+      <button class="btn go f" id="suStart">Avvia</button>
+      <input class="txt f" id="suName" placeholder="Nome WOD (facoltativo)" maxlength="40">
+      <button class="btn f" id="suSave">Salva preset</button>
+      <button class="btn f danger" id="suDel" hidden>Elimina preset</button>
+    </div>
+  </div>
+  <div class="hint" id="suHint">▲▼ cambia il valore &nbsp;·&nbsp; ◀▶ passa al campo successivo &nbsp;·&nbsp; Indietro per uscire</div>
+</section>
+
+<section class="view" id="run">
+  <div class="rtop"><span id="runLbl"></span><img src="img/helmet.png" alt=""></div>
+  <div class="rmid">
+    <div id="phase"></div>
+    <div id="big"></div>
+    <div id="sub"></div>
+    <div id="sub2"></div>
+  </div>
+  <div id="prog"></div>
+  <div class="rbtn">
+    <button class="btn f" id="runRound">+ Round</button>
+    <button class="btn f" id="runPause">Pausa</button>
+    <button class="btn f danger" id="runStop">Stop</button>
+  </div>
+</section>
+
+<section class="view" id="result">
+  <div class="top"><img src="img/helmet.png" alt=""><h1 id="resTitle"></h1></div>
+  <div class="res">
+    <div id="resBig"></div>
+    <div id="resSplits"></div>
+    <div id="resReps"></div>
+    <input class="txt f" id="resNotes" placeholder="Note: RX, 43 kg, scaled…" maxlength="80">
+    <div class="row">
+      <button class="btn go f" id="resSave">Salva nello storico</button>
+      <button class="btn f" id="resDiscard">Non salvare</button>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="hist">
+  <div class="top"><img src="img/helmet.png" alt=""><h1>Storico</h1><span>OK due volte per eliminare</span></div>
+  <div class="scroll" id="histList"></div>
+</section>
+
+<section class="view" id="sett">
+  <div class="top"><img src="img/helmet.png" alt=""><h1>Impostazioni</h1></div>
+  <div class="scroll" style="gap:3vh;justify-content:center">
+    <div class="sett"><span>Conto alla rovescia</span><div class="row" id="setCd"></div></div>
+    <div class="sett"><span>Beep</span><div class="row" id="setBeep"></div></div>
+    <div class="sett"><span>Voce</span><div class="row" id="setVoice"></div></div>
+    <div class="sett"><span>Prova audio</span><button class="btn f" id="setTest">Fai sentire</button></div>
+    <div class="sett"><span>Storico</span><button class="btn f danger" id="setClear">Cancella tutto</button></div>
+  </div>
+</section>
+
+<div id="toast"></div>
+<script src="tv.js"></script>
+</body>
+</html>
