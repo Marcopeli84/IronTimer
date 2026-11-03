@@ -232,11 +232,12 @@ function openSetup(mode, from, preset) {
   $$('#suFields .stp button').forEach(b => {
     const f = FIELDS[mode].find(x => x[0] === b.dataset.k);
     let rep = 0, tt = 0;
-    const step = () => { const d = +b.dataset.d * stepFor(f, SU[f[0]], +b.dataset.d); SU[f[0]] = Math.max(f[2] === 'n' ? 1 : (f[4] ? 0 : f[3]), Math.min(f[2] === 'n' ? 99 : 5940, SU[f[0]] + d)); updField(f); };
+    const step = () => { const d = +b.dataset.d * stepFor(f, SU[f[0]], +b.dataset.d), low = Math.min(SU[f[0]], f[2] === 'n' ? 1 : (f[4] ? 0 : f[3])); SU[f[0]] = Math.max(low, Math.min(f[2] === 'n' ? 99 : 5940, SU[f[0]] + d)); updField(f); };
     const stop = () => { clearTimeout(tt); clearInterval(rep); };
-    b.onpointerdown = e => { e.preventDefault(); step(); tt = setTimeout(() => rep = setInterval(step, 90), 420); };
+    b.onpointerdown = e => { e.preventDefault(); commitEdit(); step(); tt = setTimeout(() => rep = setInterval(step, 90), 420); };
     b.onpointerup = b.onpointerleave = b.onpointercancel = stop;
   });
+  FIELDS[mode].forEach(f => { $('#v_' + f[0]).onclick = () => editField(f); });
   go('setup');
 }
 function stepFor(f, v, dir) { if (f[2] !== 't') return f[3]; if (v + (dir < 0 ? -1 : 0) >= 600) return 60; return f[3]; }
@@ -246,7 +247,30 @@ function updField(f) {
   else if (f[2] === 's') el.innerHTML = v + '<small>sec</small>';
   else el.innerHTML = (f[4] && !v) ? '<span class="none">Nessuno</span>' : fmt(v);
 }
-function suCfg() { const c = Object.assign({}, SU); c.name = $('#suName').value.trim(); LS.set('last_' + c.mode, c); LS.set('lastMode', c.mode); return c; }
+/* type the value on the keyboard: tap the number, digits fill from the right (1230 = 12:30) */
+const commitEdit = () => { const a = document.activeElement; if (a && a.classList.contains('valin')) a.blur(); };
+const maskT = d => { d = d.slice(-4); return d ? (d.length > 2 ? d.slice(0, -2) : '0') + ':' + d.slice(-2).padStart(2, '0') : ''; };
+function editField(f) {
+  const el = $('#v_' + f[0]), isT = f[2] === 't';
+  if (el.querySelector('input')) return;
+  const inp = document.createElement('input');
+  inp.className = 'valin'; inp.type = 'text'; inp.inputMode = 'numeric'; inp.autocomplete = 'off';
+  inp.enterKeyHint = 'done'; inp.setAttribute('aria-label', f[1]);
+  inp.placeholder = isT ? fmt(SU[f[0]]) : String(SU[f[0]]);
+  let cancel = false;
+  inp.oninput = () => { const d = inp.value.replace(/\D/g, ''); inp.value = isT ? maskT(d) : d.slice(0, f[2] === 'n' ? 2 : 4); };
+  inp.onkeydown = e => { if (e.key === 'Enter') inp.blur(); else if (e.key === 'Escape') { cancel = true; inp.blur(); } };
+  inp.onblur = () => {
+    const d = inp.value.replace(/\D/g, '');
+    if (d && !cancel) {
+      const v = isT ? +d.slice(0, -2) * 60 + +d.slice(-2) : +d;
+      SU[f[0]] = Math.max(f[4] ? 0 : 1, Math.min(f[2] === 'n' ? 99 : 5940, v));
+    }
+    updField(f);
+  };
+  el.innerHTML = ''; el.appendChild(inp); inp.focus();
+}
+function suCfg() { commitEdit(); const c = Object.assign({}, SU); c.name = $('#suName').value.trim(); LS.set('last_' + c.mode, c); LS.set('lastMode', c.mode); return c; }
 $('#suStart').onclick = () => startRun(suCfg());
 $('#suRec').onclick = () => { REC.cfg = suCfg(); LS.set('recCfg', REC.cfg); go('rec'); };
 $('#suSave').onclick = () => { const c = suCfg(), P = LS.get('presets', []); P.unshift(c); LS.set('presets', P.slice(0, 30)); toast('Preset salvato'); };
