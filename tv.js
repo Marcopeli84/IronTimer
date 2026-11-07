@@ -58,7 +58,23 @@ let AC = null;
 function audio() {
   if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
   if (AC && AC.state === 'suspended') AC.resume();
+  if (AC && !HORN_REQ) loadHorn();
   return AC;
+}
+/* end-of-workout stadium air horn (audio/tromba.mp3), played whole through Web Audio */
+let HORN = null, HORN_REQ = false;
+function loadHorn() {
+  HORN_REQ = true;
+  fetch('audio/tromba.mp3').then(r => r.arrayBuffer())
+    .then(b => new Promise((ok, ko) => AC.decodeAudioData(b, ok, ko)))
+    .then(buf => { HORN = buf; }).catch(() => { HORN_REQ = false; });
+}
+function horn() {
+  if (!S.beep) return false;
+  const a = audio(); if (!a || !HORN) return false;
+  const s = a.createBufferSource(), g = a.createGain();
+  s.buffer = HORN; g.gain.value = 1; s.connect(g); g.connect(a.destination); s.start();
+  return true;
 }
 function beep(f = 880, d = 0.12, v = 0.5) {
   if (!S.beep) return;
@@ -164,7 +180,7 @@ const E = {
     if (this.done) return;
     this.endAt = Math.min(this.el(), this.total);
     this.done = true; this.running = false; this.paused = false;
-    if (natural) { beep(1320, 0.25, 0.8); setTimeout(() => beep(1320, 0.25, 0.8), 330); setTimeout(() => beep(1760, 0.6, 0.8), 660); say('Tempo!'); }
+    if (natural && !horn()) { beep(1320, 0.25, 0.8); setTimeout(() => beep(1320, 0.25, 0.8), 330); setTimeout(() => beep(1760, 0.6, 0.8), 660); say('Tempo!'); }
     wake(false);
     if (cur === 'run') openResult();
   },
