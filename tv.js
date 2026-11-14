@@ -213,6 +213,7 @@ function goHome() {
 }
 addEventListener('popstate', () => {
   if (leaving) { leaving = false; show('home'); return; }
+  if (window.multiBack && window.multiBack()) return; // Multiatleta (multi.js)
   // Back during a timer pauses it instead of losing the WOD
   if (cur === 'run') { history.pushState({ away: 1 }, ''); if (!E.done && !E.paused && E.running) E.pause(); drawRun(); $('#runStop').focus(); return; }
   if (cur === 'result') { history.pushState({ away: 1 }, ''); $('#resDiscard').focus(); return; }
@@ -253,6 +254,7 @@ addEventListener('keydown', e => {
   if (e.keyCode === 179 || e.keyCode === 85 || e.key === 'MediaPlayPause') { // play/pause on the remote
     e.preventDefault();
     if (cur === 'run') $('#runPause').click();
+    else if (window.multiPlayPause) window.multiPlayPause(); // Multiatleta (multi.js)
     return;
   }
   if (e.keyCode === 13 || e.keyCode === 23) {
