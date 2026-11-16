@@ -25,21 +25,25 @@
 #multi{padding:2vh 2vw;gap:1.2vh}
 #multi .rtop{font-size:3.6vh}
 #multi .rtop img{height:5vh}
-#mgrid{flex:1;min-height:0;display:grid;gap:1vh .8vw}
-.tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;
-  background:var(--p);border:.5vh solid var(--b);padding:1vh;color:var(--t);font-family:var(--cond)}
-.tile .tn{position:absolute;top:1.2vh;left:1.2vw;right:45%;display:flex;gap:.6vw;align-items:center;font-weight:800;font-size:var(--fl);line-height:1;text-transform:uppercase;white-space:nowrap;overflow:hidden}
-.tile .tn i{font-style:normal;background:var(--t);color:#000;padding:.1em .3em}
+#mgrid{flex:1;min-height:0;display:grid;gap:2vh 1.4vw;padding:1vh .8vw}
+.tile{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  --bw:1.5vh;--bh:calc(var(--fl)*1.5);
+  background:var(--p);border:var(--bw) solid var(--ac,var(--b));border-top-width:var(--bh);padding:1vh;color:var(--t);font-family:var(--cond)}
+/* athlete colour: band on top with number and name, thick frame all around */
+.tile .tn{position:absolute;top:calc(-1 * var(--bh));height:var(--bh);left:.4vw;right:40%;display:flex;gap:.6vw;align-items:center;font-weight:800;font-size:calc(var(--fl)*1.1);line-height:1;text-transform:uppercase;white-space:nowrap;overflow:hidden;color:#000}
+.tile .tn i{font-style:normal}
 .tile .tn b{overflow:hidden;text-overflow:ellipsis}
-.tile .tmd{position:absolute;top:1.4vh;right:1.2vw;max-width:52%;font-weight:700;font-size:calc(var(--fl)*.78);line-height:1;color:var(--m);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .tmd{position:absolute;top:calc(-1 * var(--bh));height:var(--bh);display:flex;align-items:center;right:.4vw;max-width:45%;font-weight:700;font-size:calc(var(--fl)*.78);line-height:1;color:rgba(0,0,0,.65);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile .tph{font-weight:800;font-size:var(--fp);line-height:1;letter-spacing:.08em;text-transform:uppercase;color:var(--g);min-height:1em}
 .tile .tbig{font-weight:800;font-size:var(--fs);line-height:.95;font-variant-numeric:tabular-nums;color:var(--g);white-space:nowrap}
 .tile .tbig.long{font-size:calc(var(--fs)*.72)}
 .tile .tsub{font-weight:700;font-size:calc(var(--fp)*.85);line-height:1.1;text-transform:uppercase;min-height:1.1em}
 .tile .tbar{position:absolute;left:0;bottom:0;height:1vh;background:var(--g);width:0}
 
-/* selected athlete: white frame, the colours keep showing the athlete's state */
-#mgrid .tile:focus{background:var(--p);border-color:var(--b);color:var(--t);box-shadow:none;outline:.7vh solid #fff;outline-offset:.3vh}
+/* selected athlete: white outline outside the coloured frame; it pulses until the athlete has started */
+#mgrid .tile:focus{background:var(--p);border-color:var(--ac,var(--b));color:var(--t);box-shadow:none;outline:.35vh solid #fff;outline-offset:.5vh}
+#mgrid .tile.idle:focus{animation:selPulse .7s ease-in-out infinite alternate}
+@keyframes selPulse{from{outline:.4vh solid rgba(255,255,255,.3);outline-offset:.3vh}to{outline:1.1vh solid #fff;outline-offset:.5vh}}
 #mgrid .tile.idle .tbig{color:var(--t)}
 #mgrid .tile.wait{opacity:.5}
 #mgrid .tile.wait .tbig,#mgrid .tile.wait .tph{color:var(--m)}
@@ -47,18 +51,17 @@
 #mgrid .tile.paused .tph{color:var(--t)}
 #mgrid .tile.rest{background:#2a0705}
 #mgrid .tile.rest .tbig,#mgrid .tile.rest .tph{color:var(--red)}
-#mgrid .tile.cdb{background:#2b2500;border-color:var(--y);box-shadow:0 0 0 .6vh var(--y)}
+#mgrid .tile.cdb{background:#2b2500;box-shadow:inset 0 0 0 .7vh var(--y)}
 #mgrid .tile.cdb .tbig,#mgrid .tile.cdb .tph{color:var(--y)}
 #mgrid .tile.cdb .tbig{font-size:var(--fc)}
-#mgrid .tile.done{background:#0d1a00;border-color:var(--g)}
+#mgrid .tile.done{background:#0d1a00}
 #mgrid .tile.done .tbig{color:#fff}
 /* flashes */
-#mgrid .tile.last{background:#fff;border-color:#fff}
-#mgrid .tile.yfull{background:var(--y);border-color:var(--y)}
-#mgrid .tile.gfull{background:var(--g);border-color:var(--g)}
-#mgrid .tile.rfull{background:var(--red);border-color:var(--red)}
+#mgrid .tile.last{background:#fff}
+#mgrid .tile.yfull{background:var(--y)}
+#mgrid .tile.gfull{background:var(--g)}
+#mgrid .tile.rfull{background:var(--red)}
 #mgrid .tile.last *,#mgrid .tile.yfull *,#mgrid .tile.gfull *,#mgrid .tile.rfull *{color:#000!important}
-#mgrid .tile.last .tn i,#mgrid .tile.yfull .tn i,#mgrid .tile.gfull .tn i,#mgrid .tile.rfull .tn i{background:#000;color:#fff!important}
 #mgrid .tile.last .tbar,#mgrid .tile.gfull .tbar{background:#000}
 
 /* athlete / general menu */

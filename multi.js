@@ -230,12 +230,14 @@ function startMulti() {
   show('multi', $('#mgrid .tile'));
   drawGrid();
 }
+// one clearly different colour per athlete (green stays the app colour)
+const ACOL = ['#3D8BFF', '#FF8A1F', '#FF3DA8', '#1FD6F0', '#A16BFF', '#EDEDED', '#FFD400', '#FF4433'];
 const LAYOUT = { 2: [2, 1], 3: [3, 1], 4: [2, 2], 5: [3, 2], 6: [3, 2], 7: [4, 2], 8: [4, 2] };
 function buildGrid() {
   const [cols, rows] = LAYOUT[ATS.length], g = $('#mgrid');
   g.style.gridTemplateColumns = 'repeat(' + cols + ', minmax(0,1fr))';
   g.style.gridTemplateRows = 'repeat(' + rows + ', minmax(0,1fr))';
-  g.innerHTML = ATS.map((a, i) => `<button class="tile f" data-i="${i}"><div class="tn"><i>${i + 1}</i><b>${esc(athName(i))}</b></div><div class="tmd"></div><div class="tph"></div><div class="tbig"></div><div class="tsub"></div><div class="tbar"></div></button>`).join('');
+  g.innerHTML = ATS.map((a, i) => `<button class="tile f" data-i="${i}" style="--ac:${ACOL[i]}"><div class="tn"><i>${i + 1}</i><b>${esc(athName(i))}</b></div><div class="tmd"></div><div class="tph"></div><div class="tbig"></div><div class="tsub"></div><div class="tbar"></div></button>`).join('');
   // digits sized from the tile: wide enough for "12:00", tall enough to leave room for the labels
   const w = innerWidth * 0.96 / cols, h = innerHeight * 0.84 / rows;
   g.style.setProperty('--fs', Math.min(w * 0.33, h * 0.42) + 'px');
