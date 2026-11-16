@@ -213,6 +213,7 @@ function goHome() {
 }
 addEventListener('popstate', () => {
   if (leaving) { leaving = false; show('home'); return; }
+  if (window.helpBack && window.helpBack()) return; // Istruzioni (help.js)
   if (window.multiBack && window.multiBack()) return; // Multiatleta (multi.js)
   // Back during a timer pauses it instead of losing the WOD
   if (cur === 'run') { history.pushState({ away: 1 }, ''); if (!E.done && !E.paused && E.running) E.pause(); drawRun(); $('#runStop').focus(); return; }

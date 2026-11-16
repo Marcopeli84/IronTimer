@@ -784,7 +784,7 @@ if ('serviceWorker' in navigator) {
   let reloaded = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     if (!hadCtl || reloaded) return;
-    if (E.running || REC.recording) { toast('Aggiornamento pronto: riapri l\'app'); return; }
+    if (E.running || REC.recording || (window.multiBusy && window.multiBusy())) { toast('Aggiornamento pronto: riapri l\'app'); return; }
     reloaded = true; location.reload();
   });
   addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then(reg => {
